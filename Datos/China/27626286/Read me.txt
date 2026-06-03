@@ -1,0 +1,5 @@
+High Resolution Water Quality Dataset of Chinese Lakes and Reservoirs from 2000 to 2023
+
+Huixiao Pan, Shilong Luan, Ruoque Shen, Xiaosheng Xia, Hongtao Duan, Wenping Yuan, Jing Wei
+
+The dataset includes monthly data of eight water quality parameters for lakes and reservoirs in China from 2000 to 2023. The data were simulated using random forest models, taking into account the impacts of climate, soil properties, and anthropogenic activities. These water quality parameters are pH, dissolved oxygen (DO; mg/L), total nitrogen (TN; mg/L), total phosphorus (TP; mg/L), permanganate index (CODMn; mg/L), turbidity (Tur; JTU), electrical conductivity (EC; S/m) and dissolved organic carbon (DOC; mg/L). The data is stored in CSV format, sorted by lake and reservoir, and each CSV file contains monthly water quality data for the lake or reservoir and corresponding coordinates.

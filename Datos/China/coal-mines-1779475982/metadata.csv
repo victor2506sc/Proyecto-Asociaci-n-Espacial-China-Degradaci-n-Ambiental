@@ -1,0 +1,70 @@
+field name,data header name,definition
+GEM Mine ID,gem_mine_id,A unique alphanumeric identifier assigned to each coal mine by GEM for internal identification purposes.
+MSHA ID,msha_id,A unique numerical identifier assigned to each US coal mine by the US Mine Safety and Health Administration (MSHA) for identification purposes nationwide.
+Country / Area,country_area,The geographic country or area where a coal mine or proposed coal mine project is located.
+Mine Name,mine_name,The name of a coal mine or proposed coal mine project.
+Mine Name AKAs,mine_name_akas,The nickname or alias of a coal mine or proposed coal mine project. AKAs are often used with proposed projects which have not yet been assigned an official name.
+Mine Name (Non-ENG),mine_name_non_eng,"The non-english name of a coal mine or proposed coal mine project, as it appears in the official language of the country or area where the mine is located."
+Complex Name,complex_name,The name of the larger mining complex or group to which one or more coal mines belong.
+GEM Wiki Page (ENG),gem_wiki_page_eng,The URL corresponding to a coal mine's or proposed coal mine project's English GEM wiki page.
+GEM Wiki Page (Non-ENG),gem_wiki_page_non_eng,The URL corresponding to a coal mine's or proposed coal mine project's non-English GEM wiki page.
+Status,status,"""Status"" describes the various active/inactive stages of a coal mine or mine project."
+Status Detail,status_detail,"""Status detail"" describes the mine status on a granular level, such as which planning stage a proposed coal mine project has progressed to, or whether an operating mine is experiencing temporary work stoppages."
+Project Type,project_type,"Refers to the type of coal mine project: expansion, extension, or new."
+Project Phase,project_phase,"Refers to proposed coal mine projects that will be developed in stages, often with initial development followed by subsequent expansions over time (e.g., Phase I, II, III)."
+Owners,owners,"The immediate owner of a coal mine or coal mine project who is responsible for the mining of the coal. The number in brackets next to the owning entity's name denotes the percentage of shares they hold. If an individual rather than a company owns the mine, this is indicated by the term ""natural person(s)."""
+Owners GEM Entity ID,owners_gem_entity_id,"Unique identifier assigned by the GEM's Global Energy Ownership Tracker team. Renamed from 'Owner GEM Entity ID' in the May-2026 release; format also changed from 'E12345 [100%]' to 'E12345' (ownership percentages are now exclusively in the Global Energy Ownership Tracker, not denormalized into this cell)."
+Owners (Non-ENG),owners_non_eng,"The non-english name of the immediate owner of the coal mine or proposed coal mine project, as it appears in the official language of the country or area where the mine is located."
+Parent Company,parent_company,"The highest-level owner of a coal mine or coal mine project. The number in brackets next to the owning entity's name denotes the percentage of shares they hold. If an individual rather than a company owns the mine, this is indicated by the term ""natural person(s)."""
+Company HQs,company_hqs,The geographic country or area where the parent company is headquartered in.
+Capacity (Mtpa),capacity_mtpa,"The maximum amount of coal a mine or mine project is engineered to produce, expressed in millions of tonnes per year."
+Production (Mtpa),production_mtpa,"The amount of coal produced by a mine, expressed in millions of tonnes per year."
+Year of Production,year_of_production,"The year during which the cited coal production occurred. (If coal output for the current year is unavailable, data for the most recently available year is given.)"
+"Coal Output (Annual, Mst)",coal_output_annual_mst,"The amount of coal produced by a US mine, expressed in millions of short tons per year. This value applies to US coal mines only."
+Mine Type,mine_type,"The classification of coal mines by mining method, including ""Surface,"" ""Underground,"" and combined ""Underground & Surface"" facilities."
+Mining Method,mining_method,The specific technique used to extract coal from the earth.
+Mine Size (Km2),mine_size_km2,"The total surface area of the mining covered by the coal mining operation, including surface facilities, access roads, overburden dumps, and the underground or open-pit mine footprint."
+Mine Depth (m),mine_depth_m,The vertical distance from the ground surface down to the coal seam that is being mined.
+Depth Accuracy,depth_accuracy,"Indicates the confidence level in the reported depth of the coal mine. ""Exact"" means the depth is directly stated in a reliable source, while ""Estimated"" means it is inferred from averages at the national level in a variety of industry and government reports."
+Workforce Size,workforce_size,"The total number of personnel employed by a coal mining operation, including both direct employees and contractors working on-site."
+Workforce Accuracy,workforce_accuracy,"Indicates the accuracy level of workforce data. ""Exact"" means the workforce size is explicitly reported in data sources, while ""Estimated"" refers to figures generated using GEM’s machine learning model when official data is unavailable."
+Coal Type,coal_type,"The classification of coal based on its physical and chemical properties, particularly its carbon content, calorific value, moisture, volatile matter, and ash content. Global Coal Mine Tracker use British coal type (lignite, subbituminous, bituminous, anthracite)."
+Coal Grade,coal_grade,The classification of coal based on its primary use: -Thermal Coal: Used for power generation or industrial heating. -Metallurgical Coal (Coking Coal): Used for steelmaking and other industrial processes.
+Percentage of Met Coal,percentage_of_met_coal,"The proportion of metallurgical coal within the ""Thermal & Met"" classification under Coal Grades for opearting coal mines."
+Percentage of Thermal Coal,percentage_of_thermal_coal,"The proportion of thermal coal within the ""Thermal & Met"" classification under Coal Grades for operating coal mines."
+Accuracy Rating,accuracy_rating,"Indicates the confidence level in the accuracy of the information provided. A percentage split is marked as ""Exact"" when it is explicitly stated in the data source, and ""Estimated"" when it is based on the researcher’s interpretation or experience drawn from available sources."
+Reported Year of Percentage Split,reported_year_of_percentage_split,The year in which the percentage breakdown of coal grade was reported or deocumented.
+"Total Reserves (Proven and Probable, Mt)",total_reserves_proven_and_probable_mt,The combined amount of economically recoverable or minable coal.
+Year of Total Reserves Recorded,year_of_total_reserves_recorded,The year in which the total coal reserves of the mine were reported or evaluated.
+"Total Resource (Inferred, Indicated, Measured)",total_resource_inferred_indicated_measured,The total estimated volume of a coal deposit in the ground
+Reserve to Production Ratio (R/P),reserve_to_production_ratio_r_p,A measure of how long a coal reserve will last at the current annual rate of production.
+Opening Year,opening_year,The year when the mine commenced its commercial operations.
+Closing Year,closing_year,The year in which the coal mine is scheduled to close or has already ceased operations.
+Reported Life of Mine,reported_life_of_mine,"The expected operational lifespan of a mine, expressed in year, based on the currently known and economically recoverable reserves, and the planned annual production rate."
+Reported Year of Mine Life,reported_year_of_mine_life,The year in which the life of mine is reported or evaluated.
+Coalfield,coalfield,Coalfield to which a coal mine belongs.
+Latitude,latitude,"Location of the project expressed in decimal degrees, assumed to use the WGS84 coordinate system (as in Google Maps)."
+Longitude,longitude,"Location of the project expressed in decimal degrees, assumed to use the WGS84 coordinate system (as in Google Maps)."
+Location Accuracy,location_accuracy,"Indicates whether the location is ""Approximate"" or ""Exact"". Location is ""Approximate"" based on using nearest city or inferred from contextual information in the data source. Location is ""Exact"" when explicitly provided in the source materials."
+"Primary Consumer, Destination",primary_consumer_destination,"The main end user or receiving entity of the coal produced by the mine. This may include coal power plants, steel plants, export terminals, or industrial facilities that rely on coal as a primary source."
+"Primary Consumer, Destination Name",primary_consumer_destination_name,"The name of the end user or receiving entity of the coal. The project name should match exactly with those documented by GEM to ensure consistency. Renamed from 'Coal Plant, Steel Plant, Terminal' in the May-2026 release; same field, broader scope (any primary consumer/destination, not just plants/terminals)."
+"Primary Consumer, Destination GEM Wiki",primary_consumer_destination_gem_wiki,"GEM's Wiki URLs of end user or receiving entity of the coal. Renamed from 'Coal Plant, Steel Plant, Terminal GEM Wiki' in the May-2026 release."
+Gas-level Rating,gas-level_rating,The gas-level rating of a coal mine is a classification system that indicates the methane content and gas-related risk level of a coal mine.
+Gas-level Rating Appraisal Year,gas-level_rating_appraisal_year,The year in which the gas-level rating of the coal mine was appraised or officially reported.
+Reported Coal Mine Methane Emissions (thousand tonnes CH4),reported_coal_mine_methane_emissions_thousand_tonnes_ch4,"The amount of methane emissions from a coal mine as reported by an official source or company reports, expressed in thousands of metric tonnes per year."
+Reported Coal Mine Methane Emissions (thousand tonnes CO2 equivalent),reported_coal_mine_methane_emissions_thousand_tonnes_co2_equivalent,"The amount of methane emissions from a coal mine as reported by an official source or company reports, expressed in thousands of metric tonnes of carbon dioxide equivalents (CO₂e) per year."
+Year of Reported Coal Mine Methane Emissions,year_of_reported_coal_mine_methane_emissions,The year in which the coal mine methane emissions were reported or released.
+Source ID,source_id,The identifier assigned by the reporting agency to the coal mine associated with the reported methane emissions.
+Has associated plume data,has_associated_plume_data,A “Yes” in this field indicates that the GCMT asset has been associated with a remotely sensed methane plume detailed in the Global Methane Emitters Tracker. Yes* refers to the one mine (Mandalong Coal Mine) which had methane plumes associated with it in the December 2024 briefing which were not included in the version of GMET public at the time due to minor differences in query methodology.
+Has associated CMM mitigation data,has_associated_cmm_mitigation_data,"A “Yes” in this field indicates that the GCMT asset has been associated with a known coal mine methane mitigation project (e.g., pre-mining drainage, flaring, ventilation air methane destruction, utilization, etc.)."
+GEM Coal Mine Methane Emissions Estimate (MCM/yr),gem_coal_mine_methane_emissions_estimate_mcm_yr,"An estimate of annual methane emissions from a coal mine calculated by GEM, expressed in million cubic meters per year (MCM/yr). This estimate is based on the Model for Calculating Coal Mine Methane (MC2M)."
+GEM Coal Mine Methane Emissions Estimate (M tonnes/yr),gem_coal_mine_methane_emissions_estimate_m_tonnes_yr,"An estimate of annual methane emissions from a coal mine, expressed in million metric tonnes per year."
+CMM Emissions (CO2e 20 years),cmm_emissions_co2e_20_years,"An estimate of coal mine methane emissions, expressed in carbon dioxide equivalents (CO₂e) over a 20-year time horizon."
+CMM Emissions (CO2e 100 years),cmm_emissions_co2e_100_years,CMM Emissions (CO2e 100 years)
+Parent GEM Entity ID,parent_gem_entity_id,A static unique identifier assigned by GEM's Global Energy Ownership Tracker (GEOT) to the highest-level parent owner of a coal mine.
+Location (Non-ENG),location_non_eng,The non-English name of the closest city/town to a coal mine or proposed coal mine project.
+Reference Type,reference_type,Indicates the official source (national government data or company report) where the reported coal mine methane figures were found.
+Methane Emissions Factor,methane_emissions_factor,Methane Emissions Factor
+Methane Gas Content (m^3/tonne),methane_gas_content_m_3_tonne,Methane Gas Content (m^3/tonne)
+Mine boundary and methane emissions sources data available?,mine_boundary_and_methane_emissions_sources_data_available_,A “Yes” in this field indicates that a coal mine boundary/boundaries and potential sources of coal mine methane have been identified for this GCMT asset.
+Has mine boundary and methane emissions sources data?,has_mine_boundary_and_methane_emissions_sources_data_,A “Yes” in this field indicates that a coal mine boundary/boundaries and potential sources of coal mine methane have been identified for this GCMT asset.
