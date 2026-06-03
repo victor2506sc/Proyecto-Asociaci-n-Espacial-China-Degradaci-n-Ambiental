@@ -1,0 +1,838 @@
+---
+title: "Análisis de autocorrelación espacial entre el Minado de Carbón y la degradación ambiental en el norte de China"
+author: "Víctor Serrano Campos"
+format: pdf
+editor: visual
+
+---
+
+```{r librerias}
+#| message: false
+#| warning: false
+#| include: false
+library(tidyverse)
+library(sp)
+library(spdep) 
+library(tmap)
+library(rgeoda)
+library(RColorBrewer)
+library(readxl)
+library(dplyr)
+library(leaflet)
+library(classInt)
+library(ggplot2)
+library(ggiraph)
+library(leaflet)
+library(purrr)
+library(gstat)
+
+```
+
+# Resumen
+
+A pesar del avance de las energías renovables, el carbón sigue siendo uno de los pilares de respaldo del sistema eléctrico chino. Este estudio analiza la relación espacial entre la capacidad minera y la degradación ambiental en seis provincias del norte de China, evaluando sus impactos en el aire(Carbono Negro) y el agua(Conductividad Eléctrica). Metodológicamente, se construyó una malla regular con celdas de 5 kilómetros cuadrados para homogeneizar los datos y aplicar análisis de autocorrelación espacial univariante y bivariante mediante indicadores locales de asociación espacial (LISA). Los resultados revelan una fuerte dependencia espacial global en todas las variables. El análisis bivariante local demuestra que la contaminación atmosférica por Carbono Negro no respeta las fronteras administrativas, identificando un cluster Low-High en Henan donde la orografía y meteorología ayuda a transportar las emisiones desde el cinturón minero de Shanxi. Por el contrario, el impacto hidrológico exhibe una lógica estrictamente localizada, con clusters High-High, en Mongolia Interior, vinculados al drenaje ácido de mina y al trasvase de las aguas contaminadas por las cuencas del norte de China.
+En conclusión, aunque los patrones identificados son estadísticamente considerables, la asociación espacial no implica causalidad directa. La minería de carbón actúa como uno de los múltiples factores que configuran la calidad ambiental de la región, entrelazándose con otras fuentes de emisión industrial, condiciones meteorológicas y dinámicas hidrológicas mucho más complejas. 
+
+# 1. Introducción
+
+***Estado del carbón y su minado en China***
+
+En la última década, las políticas impulsadas por el gobierno chino han encaminado el país hacia un modelo de producción energético basado en las fuentes renovables. Añadiendo China, en 2023, más del 50% de la capacidad renovable global (Li et al., 2025). Aun así, el carbón sigue siendo esencial para mantener la estabilidad del sistema eléctrico como fuente de respaldo ante la intermitencia de las renovables. Y es que, aunque el carbón redujese su presencia en el mix energético hasta el 60% en 2018(Liu et al., 2019), en el año 2023 sigue representando el 55,3% del consumo total de energía (Lin & Shi, 2024).
+
+Las grandes cantidades de carbón que se consumen en el país se destinan en un 50% a la producción de energía(Yuan et al., 2018), y es que las recientes tecnologías desarrolladas en el sector tecnológico como los centros de datos, los vehículos eléctricos, las baterías de litio y los productos fotovoltaicos han disparado la demanda eléctrica.
+
+Dada la alta demanda de carbón, es esperable el hecho de que China sea el líder mundial en extracción y producción de carbón(Kirsanov, 2023). En 2021, las empresas chinas fueron capaces de producir 3900 millones de toneladas, representando un incremento del 2.5% respecto al año anterior(Kirsanov, 2023).
+
+La mayor parte de los depósitos de carbón se concentran en el norte y oeste del país(Kirsanov, 2023)(Han et al., 2018). Albergando la provincia de Shanxi hasta el 50% de las reservas nacionales, seguida por Mongolia Interior, Shaanxi y Xinjiang(Kirsanov, 2023).
+
+Aunque haya aumentado el consumo de carbón como combustible para la producción energética, el gobierno ha implementado políticas de "de-capacidad", cerrando miles de minas pequeñas e ineficientes para consolidar la industria en grandes corporaciones estatales; estimando que para el 2020 se habían cerrado unas 16.716 minas pequeñas desde 2006 (Liu et al., 2019).
+
+Debido a que la mayor parte de la producción de carbón chino es lignito y bituminoso, China se sigue viendo obligada a importar carbón antracítico de mayor calidad para satisfacer las necesidades metalúrgicas específicas del sector(Kirsanov, 2023).
+
+***Efectos de la minería de carbón al aire y agua***
+
+Es de conocimiento popular los efectos nocivos que tiene el minado de carbón sobre la población humana. Principalmente son reconocidas las consecuencias de la actividad minera sobre los propios trabajadores que participan en la extracción; como heridas o accidentes mortales relacionados con desprendimientos de rocas y/o repercusiones en la salud a largo plazo como la silicosis, comúnmente conocida como "enfermedad del minero".
+
+No ha sido hasta mediados del siglo pasado cuando se empezaron a realizar análisis del impacto de la extracción de carbón sobre dos de los pilares que sustentan la supervivencia del ser humano, el aire y el agua.
+
+Cuando tratamos y estudiamos el efecto del proceso de minería de carbón y, especialmente, su combustión posterior, nos fijamos principalmente en la cantidad de partículas suspendidas de tamaño menor a 2,5 micrómetros que encontramos en el ambiente (PM2.5). Y es que, aunque el PM2.5 no represente a ninguna sustancia o partícula concreta, puede ser diferenciados por los elementos que la componen. 
+
+El Carbono Negro, comunmente conocido como hollín, es un componente primario de la materia particulada fina(Wang et al., 2023). Este contaminante es liberado inmensamente tras la combustión de carbón; un agente que intensifica el efecto invernadero y que es un factor clave en la formación de bruma(Han et al., 2018). Las partículas de Carbono Negro son altamente tóxicas y se vinculan con un aumento en la mortalidad por enfermedades cardiovasculares y con un mayor riesgo de partos prematuros en poblaciones expuestas(Zhang et al., 2022).
+
+Por otro lado, a la hora de medir el impacto de la minería de carbón en el agua, se estudia principalmente el drenaje ácido de mina, conocido por sus siglas en inglés(AMD). El fenómeno del AMD, causado por la oxidación de minerales sulfurosos en minas activas o abandonadas, eleva la concentración de metales y sulfatos, disparando los niveles de conductividad en el agua(Ekwule et al., 2019)(Hasii & Gasii, 2024). 
+
+El aumento en la conductividad eléctrica (EC) en el agua es un indicador directo del aumento de la salinidad del líquido(Hasii & Gasii, 2024), estando también estrechamente ligada a la presencia de sólidos disueltos en el agua(Singh, 1988). Los altos niveles de EC actúan como indicadores indirectos de la presencia de metales pesados, metaloides y acidez extrema; generando condiciones hostiles para la vida acuática, degradando gravemente el suelo y con capacidad de dañar el equipamiento utilizado en la minería(Singh, 1988).
+
+***Propósito del análisis***
+
+Tras lo expuesto con anterioridad, es de gran importancia estudiar si a una mayor producción o extracción minera se le puede asociar unos mayores niveles de Carbono Negro en el aire y una mayor Conductividad Eléctrica. Debido a que las partículas finas del hollín y a que el agua de gran acidez y conductividad puede viajar muy lejos de la fuente de contaminación, sería muy irreal realizar un análisis espacial enfocado en las fronteras políticas o administrativas de China; pues los contaminantes no las respetan. 
+
+Por tanto, este análisis al estar centrado en las provincias de mayor producción de carbón en el año 2023: Shanxi, Shaanxi, Mongolia Interior, Gansu, Henan y Ningxia Hui(ver Anexo A, Figura A1). Se creará una malla o grid regular de cinco kilómetros cuadrados sobre la zona, para capturar así con mayor precisión cómo la concentración de la capacidad minera en una zona se puede asociar con la degradación ambiental en las zonas circundantes.
+
+En consecuencia, este estudio persigue dos objetivos analíticos. En primer lugar, determinar si la distribución individual de las minas de carbón, el Carbono Negro y la Conductividad Elétcrica del agua presentan patrones estadísticamente significativos de autocorrelación espacial. En segundo lugar, y relacionado con lo anterior, contrastar si existe una asociación bivariante que evidencie o indique que las zonas con alta capacidad minera tienden a estar rodeadas de áreas con niveles elevados de contaminación atmosférica e hídrica.
+
+# 2. Metodología
+
+## 2.1 Fuente de los datos
+
+Las cuatro fuentes de datos utilizadas son accesibles de forma gratuita mediante los enlaces que se indican en la sección correspondiente.
+
+***Minas***
+
+La localización y características de las minas de carbón chinas (2026) fue obtenida de la base de datos proporcionada por el [Global Energy Monitor](https://globalenergymonitor.org/projects/global-coal-mine-tracker)(Global Energy Monitor, 2026).(ver Anexo B, Figura B1)
+
+***Conductividad Eléctrica***
+
+Los datos relacionados con la Conductividad Eléctrica del agua de distintos lugares de China (2023), fue obtenida del artículo [High Resolution Water Quality Dataset of Chinese Lakes and Reservoirs from 2000 to 2023](https://www.nature.com/articles/s41597-025-04915-y)(Luan et al., 2025).(ver Anexo B, Figura B2)
+Como se indica en el artículo fuente, gran parte de los datos son resultado de la aplicación de modelos de predicción para predecir los valores de la Conductividad Eléctrica en los diversos lagos y reservorios de China. Algo que se deberá tener en cuenta a la hora de evaluar los resultados. 
+
+
+***Carbono Negro***
+
+Los datos relacionados con el Carbono Negro (2023), fueron proporcionados por el [Tracking Air Pollution](http://tapdata.org.cn/?page_id=523&lang=en), base de datos desarrollada por la Universidad de Tsinghua (Tracking Air Pollution in China \[TAP\], s.f.) (Liu et al., 2022) (Geng et al., 2017).(ver Anexo B, Figura B3)
+Al igual que en el caso anterior, y como se indica en la metodología de la fuente, los datos de Carbono Negro son resultado de un modelo Machine Learning para predecir la cantidad de Carbono Negro a lo largo del país. Siguiendo lo comentado en el caso anterior, la procedencia de los datos se tendrá en cuenta a la hora de evaluar los resultados.
+
+***China***
+
+Los datos relacionados con la geometría de China se han extraído de la base de datos [The Humanitarian Data Exchange](https://data.humdata.org/dataset/geoboundaries-admin-boundaries-for-china) creada por la OCHA(Oficina de las Naciones Unidas para la Coordinación de Asuntos Humanitarios \[OCHA\], s.f.).
+
+## 2.2 Preprocesamiento de los datos
+
+Antes de realizar el análisis, se han seleccionado todas las minas que tuvieran un inicio de operatividad previo a 2024, tanto operativas como en reserva, para mantener así la coherencia con el resto de los datos. Su nivel de producción y productividad se ha medido según la capacidad de millones de toneladas de carbón capaces de producir por año.
+
+Para la Conductividad Eléctrica, se ha calculado la media anual del año 2023 de tanto los lagos como los reservorios incluidos en la base de datos. Se ha conservado las unidades de Siemens por metro (S/m) indicada por el Sistema Internacional para la medición de la conductividad eléctrica.
+
+## 2.3 Construcción de la malla de análisis
+
+Con el fin de homogeneizar todos los datos y evitar confinar el análisis de los datos a las fronteras políticas, se ha construido una malla regular de celdas de $5 \space Km^2$ sobre las provincias ya presentadas anteriormente(ver Anexo A, Figura A1), reproyectando previamente a UTM zona 50N (EPSG:32650) para garantizar que las celdas tengan dimensiones métricas reales. 
+Cada observación de las tres variables se asigna a su celda correspondiente mediante una unión espacial, agregando la información como la media de Carbono Negro y la mediana de EC, y la suma y el número de minas por celda. Las celdas sin presencia minera reciben un valor de capacidad igual a cero. Para reducir el sesgo producido por la distribución extremadamente asimétrica de la capacidad de producción, se ha realizado una transformación logarítmica más uno (ver Anexo B, Figura B4).
+
+En último lugar, para poder realizar un análisis de autocorrelación espacial local, se han excluido de la malla todas las celdas que no contienen datos de Carbono Negro y Conductividad Espacial, creando irremediablemente "islas" de datos que quedan aislados y que se tendrán que tener en cuenta a la hora de extraer conclusiones.
+
+## 2.4 Análisis de autocorrelación espacial
+
+El análisis estadístico se ha estructurado en dos niveles. En primer lugar, se calcula el estadístico I de Moran Global para cada una de las tres variables, siguiendo la siguiente fórmula:
+
+
+$$ 
+I = \frac{N}{\sum_{i=1}^{N} \sum_{j=1}^{N} w_{ij}} \frac{\sum_{i=1}^{N} \sum_{j=1}^{N} w_{ij} (x_i - \bar{x}) (x_j - \bar{x})}{\sum_{i=1}^{N} (x_i - \bar{x})^2}
+$$
+
+
+
+Determinando así si existe un patrón general de agrupación espacial o si, por el contrario, la distribución de las variables es aleatoria.
+
+En segundo lugar, se calculan los indicadores locales de asociación espacial(LISA), mediante la siguiente función:
+
+$$
+I_i = {n}\frac{\sum_{i=1}^{n} \sum_{j=1}^{n} w_{ij} (y_i - \bar{y}) (y_j - \bar{y})}{\sum_{i=1}^{N} (y_i - \bar{y})^2}
+$$
+
+Que nos ayudan a identificar cuatro tipos de clústeres locales: celdas con valores altos rodeadas de vecinas con valores altos (High-High), celdas con valores bajos rodeadas de vecinas con valores bajos (Low-Low), y las situaciones de outliers espaciales (High-Low y Low-High).
+
+En último lugar, se aplica el I de Moran Bivariante Local para evaluar la asociación espacial entre la capacidad minera y cada uno de los dos indicadores de contaminación por separado, mediante la siguiente función:
+
+
+$$
+
+I_i^{xy} = z_i^x \sum_{j=1}^{n} w_{ij} z_j^y
+
+$$
+
+
+Identificando si las celdas con alta concentración de minería y capacidad minera tienden a estar rodeadas con celdas con niveles elevados de contaminación.
+
+# 3. Resultados
+
+```{r Cargado de los datos}
+#| include: false
+## Formas de China
+china_boundaries <- st_read("./Datos/China/geoBoundaries-CHN-ADM0_simplified.geojson")
+
+china_prov_boundaries <-  st_read("./Datos/China/geoBoundaries-CHN-ADM1.geojson")
+
+china_prov_boundaries <- st_transform(china_prov_boundaries, 4326)
+
+provincias_hub <- c(
+  "Inner Mongolia Autonomous Region", 
+  "Gansu Province", 
+  "Shanxi Province", 
+  "Shaanxi Province", 
+  "Ningxia Ningxia Hui Autonomous Region", 
+  "Henan Province"
+)
+
+# 2. Aplicamos el filter sobre tu dataset original
+china_hub_carbon <- china_prov_boundaries %>% 
+  filter(shapeName %in% provincias_hub)
+
+
+## Agua de China
+
+for (i in 1:12) {
+  cad_i <- paste0("Datos/China/27626286/Lake/Lake/lake_2023_", i, ".csv")
+  lake_i <- read_csv(cad_i)
+  if (i == 1) {
+    lake_final <- lake_i
+    
+  }
+  else{
+    lake_final <- full_join(lake_final, lake_i)
+  }
+}
+
+lake_final <- lake_final %>%
+  group_by(ID, Lon, Lat) %>%
+  summarise(
+    pH   = mean(pH, na.rm = TRUE),
+    DO   = mean(DO, na.rm = TRUE),
+    PI   = mean(PI, na.rm = TRUE),
+    TN   = mean(TN, na.rm = TRUE),
+    TP   = mean(TP, na.rm = TRUE),
+    Cond = mean(Cond, na.rm = TRUE),
+    Tur  = mean(Tur, na.rm = TRUE),
+    DOC  = mean(DOC, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+for (i in 1:12) {
+  cad_i <- paste0("Datos/China/27626286/Reservoir/Reservoir/reservoir_2023_", i, ".csv")
+  reservoir_i <- read_csv(cad_i)
+  if (i == 1) {
+    reservoir_final <- reservoir_i
+    
+  }
+  else{
+    reservoir_final <- full_join(reservoir_final, reservoir_i)
+  }
+}
+
+reservoir_final <- reservoir_final %>%
+  group_by(ID, Lon, Lat) %>%
+  summarise(
+    pH   = mean(pH, na.rm = TRUE),
+    DO   = mean(DO, na.rm = TRUE),
+    PI   = mean(PI, na.rm = TRUE),
+    TN   = mean(TN, na.rm = TRUE),
+    TP   = mean(TP, na.rm = TRUE),
+    Cond = mean(Cond, na.rm = TRUE),
+    Tur  = mean(Tur, na.rm = TRUE),
+    DOC  = mean(DOC, na.rm = TRUE),
+    .groups = "drop"
+  )
+
+lake_final      <- lake_final %>% mutate(water_type = "lake")
+reservoir_final <- reservoir_final %>% mutate(water_type = "reservoir")
+water_rf <- bind_rows(lake_final, reservoir_final)
+
+water_rf_sf <- st_as_sf(water_rf,
+                        coords = c("Lon", "Lat"),
+                        crs = 4326)
+
+
+## Hollín/ Black Carbon de China
+anual_average_pm25_and_species <- st_read("./Datos/China/China_Pm2.5_and_species_anual_average/2023_PM25_and_species.csv")
+anual_average_pm25_and_species_sf <- st_as_sf(anual_average_pm25_and_species, 
+                                              coords = c("X_Lon", "Y_Lat"), crs = 4326)
+bc <- anual_average_pm25_and_species_sf %>% 
+  select(GridID, geometry)
+bc$bc <- as.numeric(anual_average_pm25_and_species_sf$BC)
+bc <- st_set_crs(bc, 4326)
+
+## Minas de China
+china_minas_definitivo <- st_read("Datos/China/coal-mines-1779475982/coal-mines.csv")
+
+china_minas_definitivo <- china_minas_definitivo %>% 
+  filter(year_of_production != "2026.0") %>% 
+  filter(year_of_production != "2025.0") %>% 
+  filter(year_of_production != "2024.0")
+
+china_minas_definitivo <- st_as_sf(china_minas_definitivo, coords =  c("longitude", "latitude"), crs= 4326)
+
+china_minas_definitivo <- china_minas_definitivo %>% 
+  filter(status == "Mothballed" | status == "Operating" )
+china_minas_definitivo$capacity_mtpa <- as.numeric(china_minas_definitivo$capacity_mtpa)
+
+
+
+
+### CRS de datasets
+china_minas_definitivo <- st_transform(china_minas_definitivo, st_crs(china_hub_carbon))
+china_minas_definitivo <- st_intersection(china_minas_definitivo, china_hub_carbon)
+
+bc <- st_transform(bc, st_crs(china_hub_carbon))
+bc <- st_intersection(bc, china_hub_carbon)
+
+water_rf_sf <- st_transform(water_rf_sf, st_crs(china_hub_carbon))
+water_rf_sf <- st_intersection(water_rf_sf, china_hub_carbon)
+
+
+```
+
+```{r hacer el grid y añadir}
+#| message: false
+#| warning: false
+#| include: false
+
+china_m <- st_transform(china_hub_carbon, 32650)
+
+# 2. Creamos la malla limpia en formato cuadrado perfecto (SIN CORTAR AÚN)
+grid <- st_make_grid(china_m,
+                     cellsize = 50000,
+                     square   = TRUE) %>%
+  st_sf(grid_id = 1:length(.))
+
+# 3. Añadir BC al grid limpio
+bc_m <- st_transform(bc, 32650)
+bc_grid <- st_join(bc_m, grid, join = st_within) %>%
+  st_drop_geometry() %>%
+  group_by(grid_id) %>%
+  summarise(
+    bc_mean = mean(bc, na.rm = TRUE),
+    bc_n    = n()
+  ) %>%
+  ungroup()
+
+# 4. Agregar minas al grid limpio
+minas_m <- st_transform(china_minas_definitivo, 32650)
+minas_grid <- st_join(minas_m, grid, join = st_within) %>%
+  st_drop_geometry() %>%
+  group_by(grid_id) %>%
+  summarise(
+    mtpa_sum  = sum(capacity_mtpa, na.rm = TRUE),
+    mtpa_mean = mean(capacity_mtpa, na.rm = TRUE),
+    n_minas   = n()
+  ) %>%
+  ungroup()
+
+# 5. Agregar EC (Agua) al grid limpio
+water_m <- st_transform(water_rf_sf, 32650)
+ec_grid <- st_join(water_m, grid, join = st_within) %>%
+  st_drop_geometry() %>%
+  group_by(grid_id) %>%
+  summarise(
+    EC_mean   = mean(Cond,   na.rm = TRUE),
+    EC_median = median(Cond,  na.rm = TRUE),
+    EC_n      = n()
+  ) %>%
+  ungroup()
+
+
+```
+
+```{r Grid Final}
+#| message: false
+#| warning: false
+#| include: false
+
+
+grid_final <- grid %>%
+  left_join(bc_grid,    by = "grid_id") %>%
+  left_join(minas_grid, by = "grid_id") %>%
+  left_join(ec_grid,    by = "grid_id") %>%
+  mutate(
+    mtpa_sum = replace_na(mtpa_sum, 0),   # Celdas sin minas se marcan como 0
+    n_minas  = replace_na(n_minas,  0)
+  ) %>%
+  st_intersection(china_m)
+
+```
+
+## 3.1 Diagnóstico Global de Autocorrelación Espacial
+
+```{r MORAN GLOBAL}
+#| message: false
+#| warning: false
+#| include: false
+
+match_palette <- function(patterns, classifications, colors){
+  classes_present <- base::unique(patterns)
+  mat <- matrix(c(classifications,colors), ncol = 2)
+  logi <- classifications %in% classes_present
+  pre_col <- matrix(mat[logi], ncol = 2)
+  pal <- pre_col[,2]
+  return(pal)
+}
+
+# Función para representar LISA
+lisa_map <- function(df, lisa, alpha = .05, titulo = "Clusters LISA") {
+  clusters <- rgeoda::lisa_clusters(lisa, cutoff = alpha)
+  labels <- rgeoda::lisa_labels(lisa)
+  colors <- rgeoda::lisa_colors(lisa)
+  lisa_patterns <- labels[clusters + 1]
+  
+  pal <- match_palette(lisa_patterns, labels, colors)
+  labels_map <- labels[labels %in% lisa_patterns]
+  
+  df["lisa_clusters"] <- clusters
+  
+  tm_shape(df) +
+    tm_fill("lisa_clusters", labels = labels_map, palette = pal, style = "cat", title = titulo) +
+    tm_borders(col = "grey80", lwd = 0.1) +
+    tm_layout(legend.outside = TRUE)
+}
+
+# Función para representar la significatividad
+significance_map <- function(df, lisa, permutations = 999, alpha = .05, titulo = "Significancia") {
+  pvalue <- rgeoda::lisa_pvalues(lisa)
+  target_p <- 1 / (1 + permutations)
+  potential_brks <- c(.00001, .0001, .001, .01)
+  brks <- potential_brks[which(potential_brks > target_p & potential_brks < alpha)]
+  brks2 <- c(target_p, brks, alpha)
+  labels <- c(as.character(brks2), "Not Significant")
+  brks3 <- c(0, brks2, 1)
+  
+  cuts <- cut(pvalue, breaks = brks3, labels = labels)
+  df["sig"] <- cuts
+  
+  pal <- rev(RColorBrewer::brewer.pal(length(labels), "Greens"))
+  pal[length(pal)] <- "#D3D3D3"
+  
+  tm_shape(df) +
+    tm_fill("sig", palette = pal, title = titulo) +
+    tm_borders(col = "grey80", lwd = 0.1) +
+    tm_layout(legend.outside = TRUE)
+}
+
+grid_moran <- grid_final %>%
+  st_transform(4326) %>%
+  filter(!is.na(bc_mean) & !is.na(EC_mean)) %>%
+  mutate(
+    mtpa_log = log1p(mtpa_sum)  
+  )
+
+wr_grid <- spdep::poly2nb(grid_moran, queen = TRUE) 
+ww_grid <- spdep::nb2listw(wr_grid, style = "W", zero.policy = TRUE)
+
+```
+
+```{r Moran Global BC}
+#| message: false
+#| warning: false
+#| include: false
+global_bc <- spdep::moran.test(grid_moran$bc_mean, listw = ww_grid, zero.policy = TRUE)
+print(global_bc)
+```
+
+```{r Moran Global EC}
+#| message: false
+#| warning: false
+#| include: false
+global_ec <- spdep::moran.test(grid_moran$EC_mean, listw = ww_grid, zero.policy = TRUE)
+print(global_ec)
+
+```
+
+```{r MOran Global MInas}
+#| message: false
+#| warning: false
+#| include: false
+global_minas <- spdep::moran.test(grid_moran$mtpa_log, listw = ww_grid, zero.policy = TRUE)
+print(global_minas)
+
+```
+
+En este primer apartado analizaremos los resultados de los análisis Globales y Locales del estadístico I de Moran para descubrir si la distribución de las variables es aleatoria o siguen un patrón.
+
+Por tanto, presentamos en la siguiente tabla los resultados de los valores del estadístico del I de Moran junto al p-valor para considerar su significancia.
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+#| label: tbl-moran-global
+#| tbl-cap: "Resultados del Test de Moran Global para la Autocorrelación Espacial"
+
+library(knitr)
+
+# 1. Construir el data.frame extrayendo los componentes internos de cada objeto htest
+tabla_datos <- data.frame(
+  `Variable Analizada` = c("Carbono Negro (bc_mean)", "Conductividad (EC_mean)", "Capacidad Minera (mtpa_log)"),
+  
+  # Extrae el primer elemento de 'estimate' (Moran I statistic)
+  `I de Moran`         = c(global_bc$estimate[1], global_ec$estimate[1], global_minas$estimate[1]),
+  
+  
+  # Extrae el p-valor puro
+  `p-valor`            = c(global_bc$p.value, global_ec$p.value, global_minas$p.value),
+  
+  check.names = FALSE # Evita que R transforme los espacios de los títulos en puntos
+)
+
+# 2. Formatear la columna de p-valores para estética académica (ej: transforma 2.2e-16 en < 0.001)
+tabla_datos$`p-valor` <- format.pval(tabla_datos$`p-valor`, eps = 0.001, digits = 4)
+
+knitr::kable(
+  tabla_datos, 
+  digits = 4,
+  align = c("l", "l", "c", "c", "c", "c") 
+)
+```
+
+Gracias a los resultados de la Tabla 1, podemos rechazar la hipótesis nula de aleatoriedad espacial para las tres variables. Obteniendo además un valor de significancia extremadamente menor al umbral de significancia ($\alpha = 0.001$).
+
+Tanto el Carbono Negro como la Conductividad Eléctrica presentan una autocorrelación espacial extremadamente alta. Indicando para el hollín la formación de regiones dónde se acumulan las partículas contaminantes, mientras que para la Conductividad Eléctrica indica que las regiones con alta conductividad y por tanto una alta acidez del agua se concentran en cuencas hidrográficas localizadas.
+
+Como ya se ha comentado anteriormente en el apartado 2.2, la procedencia de los datos de los contaminantes influye en los valores del estadístico I de Moran. Pues al proceder de modelos de predicción, se suavizan los datos atípicos y por tanto incrementando el valor del estadístico. Aun así, debido a que el estadístico es tan alto podemos concluir que incluso las variables con las que se entrenó el modelo presentaban autocorrelación espacial.
+
+
+
+Para complementar el análisis local, presentamos el siguiente gráfico de dispersión de Moran.
+
+
+
+```{r Gráfico de Dispersión, fig.align='center'}
+#| echo: false
+#| message: false
+#| warning: false
+#| fig-cap: "Gráfico de puntos del estadístico I de Moran Global para las tres variables"
+
+par(mfrow = c(1, 3), mar = c(4,4,2,1)) 
+
+spdep::moran.plot(grid_moran$bc_mean, listw = ww_grid, zero.policy = TRUE, 
+                  labels = FALSE, pch = 20, col = "firebrick",
+                  xlab = "BC Medio", ylab = "BC Lag Espacial", main = "Moran: BC")
+
+spdep::moran.plot(grid_moran$EC_mean, listw = ww_grid, zero.policy = TRUE, 
+                  labels = FALSE, pch = 20, col = "dodgerblue",
+                  xlab = "EC Media", ylab = "EC Lag Espacial", main = "Moran: EC")
+
+spdep::moran.plot(grid_moran$mtpa_log, listw = ww_grid, zero.policy = TRUE, 
+                  labels = FALSE, pch = 20, col = "darkorange",
+                  xlab = "Log(Minas)", ylab = "Log(Minas) Lag Espacial", main = "Moran: Minas")
+
+par(mfrow = c(1, 1)) 
+
+```
+
+Gracias a la Figura 1, podemos observar cómo tanto el Carbono Negro como la Conductividad Eléctrica siguen aproximadamente un I de Moran ideal, mientras que en el de minas se ve distorsionado debido a que hay muchas celdas en las que no está presente ninguna mina. 
+
+## 3.2 Diagnóstico Local de Autocorrelación Espacial
+
+```{r Moran Local Univariante}
+#| message: false
+#| warning: false
+#| include: false
+w2_grid <- rgeoda::queen_weights(grid_moran)
+LMoran_bc <- rgeoda::local_moran(w2_grid, grid_moran['bc_mean'])
+
+LMoran_ec <- rgeoda::local_moran(w2_grid, grid_moran['EC_mean'])
+
+LMoran_minas <- rgeoda::local_moran(w2_grid, grid_moran['mtpa_log'])
+
+
+
+
+
+```
+
+En este segundo apartado vamos a analizar los estadísticos locales de Moran para poder identificar los clusters de cada una de las tres variables.
+
+Primeramente, analizaremos los clusters dónde se agrupan las grandes cantidades de Carbono Negro y las regiones dónde hay baja cantidad del contaminante.
+
+
+```{r Mapas LU BC, fig.align='center'}
+#| echo: false
+#| message: false
+#| warning: false
+#| fig-cap: "Mapas LISA y de Significancia basado en el estadístico Local I de Moran de la variable Carbono Negro"
+
+
+mapa_lisa_bc <- lisa_map(grid_moran, LMoran_bc, titulo = "LISA: Black Carbon")
+
+
+mapa_sig_bc  <- significance_map(grid_moran, LMoran_bc, titulo = "P-valor: Black Carbon")
+
+tmap_arrange(mapa_lisa_bc, mapa_sig_bc, ncol = 2)
+
+
+```
+
+Gracias a la Figura 2 podemos realizar diversas aseveraciones, por un lado, tenemos una gran región al sur formada por la provincia de Henan y el sur de la provincia de Shanxi donde se ubica una gran cantidad de contaminación por Carbono Negro. Por otro lado, tenemos una región al oeste de la provincia de Mongolia Interior donde hay una baja cantidad de contaminación.
+
+
+```{r Mapas LU EC, fig.align='center'}
+#| echo: false
+#| message: false
+#| warning: false
+#| fig-cap: "Mapas LISA y de Significancia basado en el estadístico Local I de Moran de la variable Conductividad Eléctrica"
+
+mapa_lisa_ec <- lisa_map(grid_moran, LMoran_ec, titulo = "LISA: Conductividad (EC)")
+
+mapa_sig_ec  <- significance_map(grid_moran, LMoran_ec, titulo = "P-valor: EC")
+
+tmap_arrange(mapa_lisa_ec, mapa_sig_ec, ncol = 2)
+
+
+
+```
+
+En cuanto a la Figura 3, nos encontramos con todo lo contrario a la Figura 2, una zona de alta conductividad eléctrica centrada exclusivamente en la provincia de Mongolia Interior, mientras que hay una gran región de baja conductividad eléctrica en las provincias de Shanxi, Shaanxi, Henan y Gansu.
+
+
+```{r Mapas LU Minas, fig.align='center'}
+#| echo: false
+#| message: false
+#| warning: false
+#| fig-cap: "Mapas LISA y de Significancia basado en el estadístico Local I de Moran de la variable Capacidad Minera"
+
+
+mapa_lisa_minas <- lisa_map(grid_moran, LMoran_minas, titulo = "LISA: Minas (Capacidad)")
+mapa_sig_minas  <- significance_map(grid_moran, LMoran_minas, titulo = "P-valor: Minas")
+
+tmap_arrange(mapa_lisa_minas, mapa_sig_minas, ncol = 2)
+
+
+
+
+```
+
+La Figura 4 nos aporta la localización de un gran cluster minero centrado al norte de la provincia de Shanxi, Shaanxi y al sur de la provincia de Mongolia Interior. Encontramos por tanto el corazón de la producción minera de la zona.
+
+## 3.3 Diagnóstico Bivariante Local de Autocorrelación espacial
+
+En el apartado anterior pudimos identificar los patrones de agrupamiento de cada variable por separado. Sin embargo, para evaluar la existencia de una posible relación causa y efecto en el espacio entre las distintas variables, se ha de utilizar el Índice de Moran Bivariante Local.
+
+Mediremos por tanto el grado en el que la variable independiente, capacidad minera, se asocia espacialmente con los valores de la variable dependiente, Carbono Negro y EC, en las celdas vecinas.
+
+
+```{r Moran Bivariante Minas-BC, fig.align='center'}
+#| echo: false
+#| message: false
+#| warning: false
+#| fig-cap: " Mapas LISA y de Significancia basado en el estadístico Local I de Moran bivariante de las variables Capacidad Minera - Carbono Negro"
+
+df_bi_bc <- data.frame(
+  minas = grid_moran$mtpa_log,
+  bc    = grid_moran$bc_mean
+)
+
+BiMoran_bc <- rgeoda::local_bimoran(w2_grid, df_bi_bc)
+
+mapa_bi_bc <- lisa_map(grid_moran, BiMoran_bc, titulo = "Bi-Moran: Minas vs BC (Aire)")
+
+mapa_sig_bi_bc <- significance_map(grid_moran, BiMoran_bc, titulo = "P-valor Bi-Moran BC")
+
+tmap_arrange(mapa_bi_bc, mapa_sig_bi_bc, ncol = 2)
+
+
+
+```
+
+En la Figura 5 nos encontramos con unos resultados interesantes, pues tenemos dos zonas muy diferenciadas. Al oeste de la provincia de Mongolia Interior, tenemos una región dónde al no tener una gran producción minera no hay una gran contaminación por Carbono Negro.
+
+Por otro lado, tenemos la zona al sur de la provincia de Shanxi dónde se ubica el cinturón de minería, y que tiene asociado una gran cantidad de contaminante por carbono negro. Por otro lado, más al sur, en la provincia de Henan hay una gran contaminación por Carbono Negro mientras que no hay una gran producción minera. Esto concordaría con nuestro análisis inicial de que el contaminante no respeta las fronteras políticas, sino que se encuentra condicionado por las características del terreno.
+
+
+```{r Moran Bivariante Minas-EC, fig.align='center'}
+#| echo: false
+#| message: false
+#| warning: false
+#| fig-cap: "Mapas LISA y de Significancia basado en el estadístico Local I de Moran bivariante de las variables Capacidad Minera - Conductividad Eléctrica"
+
+
+df_bi_ec <- data.frame(
+  minas = grid_moran$mtpa_log,
+  ec    = grid_moran$EC_mean
+)
+
+BiMoran_ec <- rgeoda::local_bimoran(w2_grid, df_bi_ec)
+
+mapa_bi_ec <- lisa_map(grid_moran, BiMoran_ec, titulo = "Bi-Moran: Minas vs EC (Agua)")
+mapa_sig_bi_ec <- significance_map(grid_moran, BiMoran_ec, titulo = "P-valor Bi-Moran EC")
+
+tmap_arrange(mapa_bi_ec, mapa_sig_bi_ec, ncol = 2)
+
+```
+
+Contrariamente a la figura anterior, en la Figura 6, nos encontramos con una realidad alterna. Y es que, las zonas con un mayor nivel de conductividad eléctrica se concentran exclusivamente en la provincia de Mongolia Interior. Donde los puntos High-High de gran impacto serían los teóricos responsables de la acidez del resto de la zona. Al igual que con la figura anterior, se podría intentar hipotetizar que al pertenecer tanto Shanxi como Mongolia Interior a la cuenca del Rio Amarillo, puede producirse un trasvase y acidificación del agua de la provincia. Esta agua ácida se podría trasladar al resto de la provincia mediante la cuenca noroeste(Gu et al., 2019).
+
+# 4.Conclusiones
+
+Las tres variables analizadas presentan índices de Moran Global superiores a 0,52, lo que permite rechazar sólidamente la hipótesis de aleatoriedad espacial y confirmar tanto que la actividad minera como sus posibles impactos sobre el aire y el agua siguen patrones de agrupamiento dentro de la región de estudio. Como ya se ha comentado anteriormente, suponemos que gran parte de la autocorrelación espacial de la EC y el Carbón Negro se debe a que muchos de los datos provienen de un modelo de predicción, por tanto, debemos ser muy cautos a la hora de evaluar las posibles asociaciones espaciales que realicemos. 
+
+Sería interesante que la línea de investigación a seguir tuviese en cuenta las cuencas hidrográficas a la hora de evaluar el impacto en la calidad del agua, ya que una malla para las dos variables es un acercamiento superficial. Sería recomendable también intentar introducir más variables que ayuden a diferenciar la producción de Carbono Negro por parte de la minería a diferencia del producido por la actividad humana de otras industrias. 
+
+En lo que respecta a la contaminación atmosférica, el análisis bivariante revela lo que ya hemos comentado con anterioridad, el impacto del Carbono Negro transciende las propias celdas de la producción minera. La aparición del patrón Low-High en la provincia de Henan es especialmente interesante ya que, aunque no podemos aseverar que la presencia total del Carbono Negro en Henan es única y exclusivamente consecuencia de la industria minera, la orografía de la provincia de Shanxi nos puede ayudar a hipotetizar que las grandes cadenas montañosas y elevadas favorecen la retención del contaminante y la dispersión de este hacia un sur menos montañoso(Xue et al., 2024).
+
+Por otro lado, la contaminación hídrica muestra un comportamiento distinto. A la vez que hipotetizamos que el Carbono Negro se desplaza al sur debido a la orografía de la provincia de Shanxi, las aguas con una mayor Conductividad Eléctrica se concentran mucho más centralizados en la cuenca norte, particularmente en Mongolia Interior. Por tanto, a nivel hidrográfico, podríamos hipotetizar que, al pertenecer las provincias de Shanxi y de Mongolia Interior a la cuenca del Rio Amarillo (Huang He);las aguas contaminadas con una mayor acidez y una mayor carga de conductividad eléctrica viajan hacia la provincia del norte y se esparcen por la cuenca del noroeste acidificando las aguas de Mongolia Interior(Gu et al., 2019).
+
+En último lugar, sería conveniente comentar las limitaciones que tiene este estudio. En un primer lugar, los datos utilizados sobre las variables CN y EC son resultado de modelos de predicción espacial que, aunque tengan una alta calidad, no son ideales a la hora de hacer estudios o de obtener conclusiones realistas. Y es que, los datos históricos de la contaminación aérea e hídrica no están disponibles de manera gratuita. Por otro lado, aunque se valore altamente el trabajo del Global Energy Monitor, hay una deficiencia de datos en lo que se refiere a la producción real de las minas de carbón; lo que nos ha obligado durante todo el análisis a trabajar con la capacidad de producción.
+
+
+# 5. Referencias
+
+Ekwule, O. R., Akpen, G. D., & Ugbede, G. M. (2019). The effect of coal mining on the water quality of water sources in Nigeria. Bartın University International Journal of Natural and Applied Sciences, 2(2), 251-260.
+
+Geng, G., Zhang, Q., Tong, D., Li, M., Zheng, Y., Wang, S., & He, K. (2017). Chemical composition of ambient PM2.5 over China and relationship to precursor emissions during 2005–2012. Atmospheric Chemistry and Physics, 17(14), 9187-9203. https://doi.org/10.5194/acp-17-9187-2017
+
+Global Energy Monitor. (2026). Global Coal Mine Tracker (Edición de mayo de 2026) \[Conjunto de datos\]. https://globalenergymonitor.org/projects/global-coal-mine-tracker/
+
+Gu, X., Bai, W., Li, J., & Wang, Y. (2019). Spatio-temporal changes and their relationship in water resources and agricultural disasters across China. Hydrological Sciences Journal, 64(3). https://doi.org/10.1080/02626667.2019.1587170
+
+Han, S., Chen, H., Long, R., & Cui, X. (2018). Peak coal in China: A literature review. Resources, Conservation and Recycling, 129, 293-306. https://doi.org/10.1016/j.resconrec.2016.08.012
+
+Hasii, O., & Gasii, G. (2024). Coal mining and water resources: impacts, challenges, and strategies for sustainable environmental management. IOP Conference Series: Earth and Environmental Science, 1348, Artículo 012017. https://doi.org/10.1088/1755-1315/1348/1/012017
+
+Kirsanov, A. K. (2023). Chinese mining industry: state of the art review. Mining Science and Technology (Russia), 8(2), 115-127. https://doi.org/10.17073/2500-0632-2022-11-35
+
+Li, Z., Li, C., Fang, Y., Liu, P., & Peng, T. (2025). The paradigm shift in China's energy consumption: a multi-timescale interpretation of coal consumption fluctuations. Energy Conversion and Management, 341, Artículo 120074. https://doi.org/10.1016/j.enconman.2025.120074
+
+Lin, B., & Shi, F. (2024). Coal price, economic growth and electricity consumption in China under the background of energy transition. Energy Policy, 195, Artículo 114400. https://doi.org/10.1016/j.enpol.2024.114400
+
+Liu, S., Geng, G., Xiao, Q., Zheng, Y., Liu, X., Cheng, J., & Zhang, Q. (2022). Tracking daily concentrations of PM2.5 chemical composition in China since 2000. Environmental Science & Technology, 56(23), 16517–16527. https://doi.org/10.1021/acs.est.2c06656
+
+Liu, X., Jin, Z., & Tamura, K. (2019). The current status and prospects for coal industry transition in China (IGES Discussion Paper). Institute for Global Environmental Strategies. http://www.jstor.com/stable/resrep21780
+
+Luan, S., Pan, H., Shen, R., Xia, X., Duan, H., Yuan, W., & Wei, J. (2025). High Resolution Water Quality Dataset of Chinese Lakes and Reservoirs from 2000 to 2023. Scientific Data, 12, Artículo 572. https://doi.org/10.1038/s41597-025-04915-y
+
+Oficina de las Naciones Unidas para la Coordinación de Asuntos Humanitarios. (s.f.). The Humanitarian Data Exchange (HDX) \[Plataforma de datos\]. https://data.humdata.org/
+
+Singh, G. (1988). Impact of coal mining on mine water quality. International Journal of Mine Water, 7(3), 49-59.
+
+Tracking Air Pollution in China. (s.f.). TAP data platform \[Base de datos\]. http://tapdata.org.cn
+
+Wang, P., Liu, D., Mukherjee, A., Agrawal, M., Zhang, H., Agathokleous, E., Qiao, X., Xu, X., Chen, Y., Wu, T., Zhu, M., Saikawa, E., Agrawal, S. B., & Feng, Z. (2023). Air pollution governance in China and India: Comparison and implications. Environmental Science and Policy, 142, 112-120. https://doi.org/10.1016/j.envsci.2023.01.011
+
+Xue, L., Xue, C., Chen, X., & Guo, X. (2024). Spatial–temporal evolution characteristics of PM2.5 and its driving mechanism: spatially explicit insights from Shanxi Province, China. Environmental Monitoring and Assessment, 196(7), Artículo 12795. https://doi.org/10.1007/s10661-024-12795-9
+
+Yuan, J., Na, C., Lei, Q., Xiong, M., Guo, J., & Hu, Z. (2018). Coal use for power generation in China. Resources, Conservation and Recycling, 129, 443-453. https://doi.org/10.1016/j.resconrec.2016.03.021
+
+Zhang, Q., Meng, X., Shi, S., Kan, L., Chen, R., & Kan, H. (2022). Overview of particulate air pollution and human health in China: Evidence, challenges, and opportunities. The Innovation, 3(6), Artículo 100312. https://doi.org/10.1016/j.xinn.2022.100312
+
+# Anexo
+
+## Anexo A
+
+
+```{r Mapa Regional, fig.align='center', fig.height=6, fig.width=8}
+#| echo: false
+#| message: false
+#| warning: false
+#| fig-cap: "A1: Mapa de la región de estudio"
+
+tmap_mode("plot")
+
+mapa_base <- tm_shape(china_prov_boundaries) +
+  tm_borders(col = "grey70", lwd = 0.4) +
+  tm_fill(col = "grey95") +
+tm_shape(china_boundaries) +
+  tm_borders(col = "grey30", lwd = 1.0) +
+tm_shape(china_hub_carbon) +
+  tm_borders(col = "#c0392b", lwd = 1.2) +
+  tm_fill(col = "#e74c3c", alpha = 0.3) +
+tm_text("shapeName", size = 0.4, col = "grey10", fontface = "bold") +
+tm_layout(
+  frame = FALSE,
+  legend.show = FALSE
+)
+
+mapa_base
+
+
+
+```
+
+## Anexo B
+
+
+
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+#| fig-cap: "B1: Distribución espacial de las minas y su capacidad "
+
+tmap_mode("plot")
+grafico_bc <- tm_shape(china_hub_carbon) +
+  tm_borders(col = "grey40") +
+  tm_fill(col = "grey95") +
+  tm_shape(minas_m) +
+  tm_dots(col = "capacity_mtpa",
+          palette = "YlOrRd",
+          size = 0.4,
+          title = "Mill. Ton de carbón",
+          style = "jenks") 
+grafico_bc
+```
+
+
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+#| fig-cap: "B2: Distribución espacial del EC"
+
+tmap_mode("plot")
+grafico_bc <- tm_shape(china_hub_carbon) +
+  tm_borders(col = "grey40") +
+  tm_fill(col = "grey95") +
+  tm_shape(water_rf_sf) +
+  tm_dots(col = "Cond",
+          palette = "Blues",
+          size = 0.4,
+          title = "BC (S/m)",
+          style = "jenks") 
+grafico_bc
+```
+
+
+
+
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+#| fig-cap: "B3: Distribución espacial del BC"
+
+tmap_mode("plot")
+grafico_bc <- tm_shape(china_hub_carbon) +
+  tm_borders(col = "grey40") +
+  tm_fill(col = "grey95") +
+  tm_shape(bc) +
+  tm_dots(col = "bc",
+          palette = "inferno",
+          size = 0.5,
+          title = "BC (µg/m³)",
+          style = "quantile") 
+grafico_bc
+
+
+
+```
+
+
+
+
+```{r, fig.align='center'}
+#| echo: false
+#| message: false
+#| warning: false
+#| fig-cap: "B4: Boxplot de capacity_mtpa original vs transformada"
+
+df_box <- china_minas_definitivo %>%
+  st_drop_geometry() %>%
+  filter(!is.na(capacity_mtpa)) %>%
+  mutate(mtpa_log = log1p(capacity_mtpa)) %>%
+  pivot_longer(
+    cols      = c(capacity_mtpa, mtpa_log),
+    names_to  = "variable",
+    values_to = "valor"
+  ) %>%
+  mutate(variable = recode(variable,
+    "capacity_mtpa" = "Original (Mtpa)",
+    "mtpa_log"      = "Log(Mtpa + 1)"
+  ))
+
+ggplot(df_box, aes(x = variable, y = valor, fill = variable)) +
+  geom_boxplot(outlier.size = 0.8, outlier.alpha = 0.5, width = 0.4) +
+  scale_fill_manual(values = c("Original (Mtpa)" = "#fc8d59",
+                                "Log(Mtpa + 1)"   = "#91bfdb")) +
+  labs(x = NULL, y = "Valor", fill = NULL) +
+  theme_minimal(base_size = 11) +
+  theme(legend.position = "none")
+```
+
